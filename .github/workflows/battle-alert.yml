@@ -1,1 +1,5 @@
+name: Battlefield Auto Alert
+
+on:
+  workflow_dispatch:
 
