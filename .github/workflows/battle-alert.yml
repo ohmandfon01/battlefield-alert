@@ -9,9 +9,19 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Calculate Next Round
+        id: timecalc
+        run: |
+          HOUR=$(date -u +"%H")
+          NEXT=$(( (HOUR + 1) % 24 ))
+          printf -v NEXT "%02d:00" $NEXT
+          echo "next_round=$NEXT" >> $GITHUB_OUTPUT
+
       - name: Send Discord Alert
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d '{"content":"⚔️ @everyone อีก 10 นาที Battlefield! เตรียมตัว!! 🔥"}' \
+          -d '{
+                "content": "<@&1471890897716121792> ⚔️ Battlefield Control\n🔥 อีก 10 นาทีจะถึงรอบเวลา ${{ steps.timecalc.outputs.next_round }} เตรียมตัว!"
+              }' \
           ${{ secrets.DISCORD_WEBHOOK }}
