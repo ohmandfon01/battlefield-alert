@@ -22,6 +22,6 @@ jobs:
           curl -H "Content-Type: application/json" \
           -X POST \
           -d '{
-                "content": "<@&1471890897716121792> ⚔️🔥 BATTLEFIELD ALERT 🔥⚔️\n🕐 อีก 10 นาที ศึกชิงไข่จะปะทุ!\n🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!\n⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }} รีบไปสมัครและเตรียมกำลังให้พร้อม!"
+                "content": "<@&1471890897716121792> \n⚔️🔥 BATTLEFIELD ALERT 🔥⚔️\n🕐 อีก 10 นาที ศึกชิงไข่จะปะทุ!\n🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!\n⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }} รีบไปสมัครและเตรียมกำลังให้พร้อม!"
               }' \
           ${{ secrets.DISCORD_WEBHOOK }}
