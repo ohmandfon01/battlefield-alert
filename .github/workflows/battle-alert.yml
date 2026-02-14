@@ -8,6 +8,7 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+
     steps:
       - name: Calculate Time (Bangkok)
         id: timecalc
@@ -47,6 +48,10 @@ jobs:
       - name: Send Discord Alert
         run: |
           curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "{\"content\":\"${{ steps.randommsg.outputs.message }}\"}" \
-          ${{ secrets.DISCORD_WEBHOOK }}
+               -X POST \
+               --data-binary @- \
+               ${{ secrets.DISCORD_WEBHOOK }} <<EOF
+{
+  "content": ${{ toJson(steps.randommsg.outputs.message) }}
+}
+EOF
