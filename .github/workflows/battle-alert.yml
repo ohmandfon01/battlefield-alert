@@ -2,30 +2,19 @@ name: Battlefield Auto Alert
 
 on:
   schedule:
-    # รันก่อนรอบ 10 นาที (เวลาไทย)
-    # รอบจริง: 00,02,04,06,08,10,12,14,16,18,20,22
-    # ยิงที่ :50 ของชั่วโมงก่อนหน้า (แปลงเป็น UTC แล้ว)
     - cron: '50 0,2,4,6,8,10,12,14,16,18,20,22 * * *'
   workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Calculate Next Round (Thai Time)
+      - name: Calculate Next Round (Bangkok Time)
         id: timecalc
         run: |
-          # เวลา UTC ปัจจุบัน
-          HOUR=$(date -u +"%H")
-
-          # แปลงเป็นเวลาไทย (UTC+7)
-          THAI_HOUR=$(( (10#$HOUR + 7) % 24 ))
-
-          # เนื่องจาก cron ยิงตอน xx:50
-          # รอบจริงคือชั่วโมงถัดไป
-          NEXT=$(( (THAI_HOUR + 1) % 24 ))
-
+          export TZ=Asia/Bangkok
+          HOUR=$(date +"%H")
+          NEXT=$(( (10#$HOUR + 1) % 24 ))
           printf -v NEXT "%02d:00" $NEXT
           echo "next_round=$NEXT" >> $GITHUB_OUTPUT
 
@@ -33,7 +22,7 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d '{
-                "content": "<@&1471890897716121792> \n⚔️🔥 BATTLEFIELD ALERT 🔥⚔️\n🕐 อีก 10 นาที ศึกชิงไข่จะปะทุ!\n🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!\n⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }} รีบไปสมัครและเตรียมกำลังให้พร้อม!"
-              }' \
+          -d "{
+                \"content\": \"<@&1471890897716121792> \n⚔️🔥 BATTLEFIELD ALERT 🔥⚔️\n🕐 อีก 10 นาที ศึกชิงไข่จะปะทุ!\n🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!\n⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }} รีบไปสมัครและเตรียมกำลังให้พร้อม!\"
+              }" \
           ${{ secrets.DISCORD_WEBHOOK }}
