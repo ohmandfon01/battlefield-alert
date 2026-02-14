@@ -15,9 +15,7 @@ jobs:
           export TZ=Asia/Bangkok
 
           CURRENT_TIME=$(date +"%H:%M")
-          HOUR=$(date +"%H")
-          NEXT=$(( (10#$HOUR + 1) % 24 ))
-          printf -v NEXT "%02d:00" $NEXT
+          NEXT=$(date -d "+15 minutes" +"%H:00")
 
           MESSAGE="<@&1471890897716121792>\n🚨⚔️ ศึกตีไข่กำลังจะเริ่ม! ⚔️🚨\n📝 เหลือ 10 นาที ไปกด Dojo เพื่อสมัคร\n⏰ รอบเวลา: $NEXT\n💡 แจ้งเตือนเมื่อ: $CURRENT_TIME"
 
