@@ -2,27 +2,78 @@ name: Battlefield Auto Alert
 
 on:
   schedule:
-    - cron: '50 0,2,4,6,8,10,12,14,16,18,20,22 * * *'
+    - cron: '45 0,2,4,6,8,10,12,14,16,18,20,22 * * *'
   workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Calculate Next Round (Bangkok Time)
+      - name: Calculate Time (Bangkok)
         id: timecalc
         run: |
           export TZ=Asia/Bangkok
+
+          CURRENT_TIME=$(date +"%H:%M")
           HOUR=$(date +"%H")
+
           NEXT=$(( (10#$HOUR + 1) % 24 ))
           printf -v NEXT "%02d:00" $NEXT
+
           echo "next_round=$NEXT" >> $GITHUB_OUTPUT
+          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+
+      - name: Generate Random Message
+        id: randommsg
+        run: |
+          TITLES=(
+            "⚔️🔥 BATTLEFIELD ALERT 🔥⚔️"
+            "🚨⚔️ ศึกชิงไข่กำลังจะเริ่ม! ⚔️🚨"
+            "🔥 สนามรบกำลังลุกเป็นไฟ! 🔥"
+            "🛡️ เตรียมกองกำลังให้พร้อม! 🛡️"
+          )
+
+          LINES1=(
+            "🕐 อีกไม่นานศึกจะปะทุ!"
+            "⏳ เวลาแห่งการปะทะใกล้เข้ามา!"
+            "⚠️ ศัตรูกำลังเคลื่อนไหว!"
+            "🔥 เสียงสัญญาณรบดังขึ้นแล้ว!"
+          )
+
+          LINES2=(
+            "🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!"
+            "💣 บุกทะลวงแนวป้องกันฝ่ายตรงข้าม!"
+            "🏹 รวมพล โจมตีไม่ให้เหลือซาก!"
+            "🛡️ ตั้งรับให้แน่น อย่าให้ไข่แตก!"
+          )
+
+          ENDINGS=(
+            "รีบไปสมัครและเตรียมกำลัง!"
+            "เข้าสู่สนามรบเดี๋ยวนี้!"
+            "นี่ไม่ใช่การซ้อม!"
+            "ชัยชนะรออยู่!"
+          )
+
+          TITLE=${TITLES[$RANDOM % ${#TITLES[@]}]}
+          LINE1=${LINES1[$RANDOM % ${#LINES1[@]}]}
+          LINE2=${LINES2[$RANDOM % ${#LINES2[@]}]}
+          ENDING=${ENDINGS[$RANDOM % ${#ENDINGS[@]}]}
+
+          MESSAGE="<@&1471890897716121792>
+$TITLE
+$LINE1
+$LINE2
+⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }}
+📡 แจ้งเตือนเมื่อ: ${{ steps.timecalc.outputs.current_time }}
+$ENDING"
+
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send Discord Alert
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d "{
-                \"content\": \"<@&1471890897716121792> \n⚔️🔥 BATTLEFIELD ALERT 🔥⚔️\n🕐 อีก 10 นาที ศึกชิงไข่จะปะทุ!\n🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!\n⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }} รีบไปสมัครและเตรียมกำลังให้พร้อม!\"
-              }" \
+          -d "$(jq -n --arg content "${{ steps.randommsg.outputs.message }}" '{content: $content}')" \
           ${{ secrets.DISCORD_WEBHOOK }}
