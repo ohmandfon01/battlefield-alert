@@ -10,52 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Calculate Time (Bangkok)
-        id: timecalc
+      - name: Send Discord Alert
         run: |
           export TZ=Asia/Bangkok
+
           CURRENT_TIME=$(date +"%H:%M")
           HOUR=$(date +"%H")
           NEXT=$(( (10#$HOUR + 1) % 24 ))
           printf -v NEXT "%02d:00" $NEXT
 
-          echo "next_round=$NEXT" >> $GITHUB_OUTPUT
-          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
-
-      - name: Generate Random Message
-        id: randommsg
-        run: |
-          TITLES=("⚔️🔥 BATTLEFIELD ALERT 🔥⚔️" "🚨⚔️ ศึกชิงไข่กำลังจะเริ่ม! ⚔️🚨" "🔥 สนามรบกำลังลุกเป็นไฟ! 🔥" "🛡️ เตรียมกองกำลังให้พร้อม! 🛡️")
-          LINES1=("🕐 อีกไม่นานศึกจะปะทุ!" "⏳ เวลาแห่งการปะทะใกล้เข้ามา!" "⚠️ ศัตรูกำลังเคลื่อนไหว!" "🔥 เสียงสัญญาณรบดังขึ้นแล้ว!")
-          LINES2=("🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!" "💣 บุกทะลวงแนวป้องกันฝ่ายตรงข้าม!" "🏹 รวมพล โจมตีไม่ให้เหลือซาก!" "🛡️ ตั้งรับให้แน่น อย่าให้ไข่แตก!")
-          ENDINGS=("รีบไปสมัครและเตรียมกำลัง!" "เข้าสู่สนามรบเดี๋ยวนี้!" "นี่ไม่ใช่การซ้อม!" "ชัยชนะรออยู่!")
+          TITLES=("⚔️🔥 BATTLEFIELD ALERT 🔥⚔️" "🚨⚔️ ศึกชิงไข่กำลังจะเริ่ม! ⚔️🚨" "🔥 สนามรบกำลังลุกเป็นไฟ! 🔥")
+          LINES1=("🕐 อีกไม่นานศึกจะปะทุ!" "⏳ เวลาแห่งการปะทะใกล้เข้ามา!" "⚠️ ศัตรูกำลังเคลื่อนไหว!")
+          LINES2=("🥚 ปกป้องไข่ฝ่ายเรา ทำลายของศัตรูให้ราบ!" "💣 บุกทะลวงแนวป้องกัน!" "🏹 รวมพล โจมตีไม่ให้เหลือซาก!")
+          ENDINGS=("รีบไปสมัครและเตรียมกำลัง!" "เข้าสู่สนามรบทันที!" "ชัยชนะรออยู่!")
 
           TITLE=${TITLES[$RANDOM % ${#TITLES[@]}]}
           LINE1=${LINES1[$RANDOM % ${#LINES1[@]}]}
           LINE2=${LINES2[$RANDOM % ${#LINES2[@]}]}
           ENDING=${ENDINGS[$RANDOM % ${#ENDINGS[@]}]}
 
-          MESSAGE="<@&1471890897716121792>
-$TITLE
-$LINE1
-$LINE2
-⏳ รอบเวลา: ${{ steps.timecalc.outputs.next_round }}
-📡 แจ้งเตือนเมื่อ: ${{ steps.timecalc.outputs.current_time }}
-$ENDING"
-
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MESSAGE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Send Discord Alert
-        run: |
-          MESSAGE="${{ steps.randommsg.outputs.message }}"
-          PAYLOAD=$(jq -n --arg content "$MESSAGE" '{content: $content}')
+          MESSAGE="<@&1471890897716121792>\n$TITLE\n$LINE1\n$LINE2\n⏳ รอบเวลา: $NEXT\n📡 แจ้งเตือนเมื่อ: $CURRENT_TIME\n$ENDING"
 
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d "$PAYLOAD" \
+               -d "{\"content\":\"$MESSAGE\"}" \
                ${{ secrets.DISCORD_WEBHOOK }}
