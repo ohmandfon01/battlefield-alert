@@ -1,9 +1,12 @@
-name: Battlefield Auto Alert (Test 1 Min)
+name: Battlefield Auto Alert
 
 on:
-  schedule:
-    - cron: '* * * * *'   # รันทุก 1 นาที
   workflow_dispatch:
+  schedule:
+    - cron: "*/1 * * * *"
+
+permissions:
+  contents: read
 
 jobs:
   notify:
@@ -11,6 +14,7 @@ jobs:
 
     steps:
       - name: Send Discord Alert
+        shell: bash
         run: |
           export TZ=Asia/Bangkok
 
@@ -19,9 +23,9 @@ jobs:
           NEXT=$(( (10#$HOUR + 1) % 24 ))
           printf -v NEXT "%02d:00" $NEXT
 
-          MESSAGE="🧪 TEST ALERT\n⏳ เวลา: $CURRENT_TIME\n⏭ รอบถัดไป: $NEXT"
+          MESSAGE="🧪 TEST ALERT - $CURRENT_TIME | รอบถัดไป $NEXT"
 
-          curl -H "Content-Type: application/json" \
+          curl -v -H "Content-Type: application/json" \
                -X POST \
                -d "{\"content\":\"$MESSAGE\"}" \
-               ${{ secrets.DISCORD_WEBHOOK }}
+               "${{ secrets.DISCORD_WEBHOOK }}"
