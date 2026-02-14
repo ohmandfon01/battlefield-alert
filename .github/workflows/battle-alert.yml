@@ -1,31 +1,24 @@
-name: Battlefield Auto Alert (TEST MODE)
+- name: Send Discord Alert
+  run: |
+    export TZ=Asia/Bangkok
 
-on:
-  schedule:
-    - cron: '*/1 * * * *'   # ยิงทุก 5 นาที
-  workflow_dispatch:
+    echo "Server UTC time: $(date -u)"
+    echo "Server BKK time: $(date)"
 
-jobs:
-  notify:
-    runs-on: ubuntu-latest
+    CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+    HOUR=$(date +"%H")
+    NEXT=$(( (10#$HOUR + 1) % 24 ))
+    printf -v NEXT "%02d:00" $NEXT
 
-    steps:
-      - name: Send Discord Alert
-        run: |
-          export TZ=Asia/Bangkok
+    MESSAGE="<@&1471890897716121792> TEST MODE | รอบถัดไป $NEXT | เวลา $CURRENT_TIME"
 
-          echo "Server UTC time: $(date -u)"
-          echo "Server BKK time: $(date)"
+    echo "Sending message..."
+    RESPONSE=$(curl -s -o response.txt -w "%{http_code}" \
+      -H "Content-Type: application/json" \
+      -X POST \
+      -d "{\"content\":\"$MESSAGE\"}" \
+      ${{ secrets.DISCORD_WEBHOOK }})
 
-          CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S")
-
-          HOUR=$(date +"%H")
-          NEXT=$(( (10#$HOUR + 1) % 24 ))
-          printf -v NEXT "%02d:00" $NEXT
-
-          MESSAGE="<@&1471890897716121792>\n🧪 TEST MODE\n⏰ รอบถัดไป (คำนวณ): $NEXT\n💡 แจ้งเตือนเมื่อ: $CURRENT_TIME"
-
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\":\"$MESSAGE\"}" \
-               ${{ secrets.DISCORD_WEBHOOK }}
+    echo "HTTP Status: $RESPONSE"
+    echo "Response body:"
+    cat response.txt
