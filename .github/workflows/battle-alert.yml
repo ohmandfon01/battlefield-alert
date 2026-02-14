@@ -1,8 +1,8 @@
-name: Battlefield Auto Alert
+name: Battlefield Auto Alert (TEST MODE)
 
 on:
   schedule:
-    - cron: '45 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+    - cron: '*/5 * * * *'   # ยิงทุก 5 นาที
   workflow_dispatch:
 
 jobs:
@@ -14,13 +14,16 @@ jobs:
         run: |
           export TZ=Asia/Bangkok
 
-          CURRENT_TIME=$(date +"%H:%M")
+          echo "Server UTC time: $(date -u)"
+          echo "Server BKK time: $(date)"
+
+          CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S")
 
           HOUR=$(date +"%H")
           NEXT=$(( (10#$HOUR + 1) % 24 ))
           printf -v NEXT "%02d:00" $NEXT
 
-          MESSAGE="<@&1471890897716121792>\n🚨⚔️ ศึกตีไข่กำลังจะเริ่ม! ⚔️🚨\n📝 เหลือ 10 นาที ไปกด Dojo เพื่อสมัคร\n⏰ รอบเวลา: $NEXT\n💡 แจ้งเตือนเมื่อ: $CURRENT_TIME"
+          MESSAGE="<@&1471890897716121792>\n🧪 TEST MODE\n⏰ รอบถัดไป (คำนวณ): $NEXT\n💡 แจ้งเตือนเมื่อ: $CURRENT_TIME"
 
           curl -H "Content-Type: application/json" \
                -X POST \
