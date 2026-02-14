@@ -1,0 +1,40 @@
+name: Battlefield Warning
+
+on:
+  schedule:
+    # รันทุก 5 นาที
+    - cron: '*/5 * * * *'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check time and send message
+        run: |
+          NOW_H=$(date -u +%H)
+          NOW_M=$(date -u +%M)
+
+          # แปลงเป็นเวลาไทย (UTC+7)
+          H=$(( (10#$NOW_H + 7) % 24 ))
+          M=$((10#$NOW_M))
+
+          # สมมุติวอทุก 2 ชั่วโมง (00,02,04,...)
+          NEXT_WAR=$(( (H / 2) * 2 + 2 ))
+          if [ $NEXT_WAR -ge 24 ]; then
+            NEXT_WAR=0
+          fi
+
+          # เวลาวอถัดไป
+          WAR_H=$NEXT_WAR
+          WAR_M=00
+
+          # ถ้าเหลือ 30 นาที
+          if [ "$M" -eq 30 ] && [ $((H % 2)) -eq 1 ]; then
+            curl -H "Content-Type: application/json" \
+                 -X POST \
+                 -d '{
+                   "content": "⚔️ วอจะเริ่มในอีก 30 นาที!\n\n⏰ ระบบจะเปิดสมัคร Dojo ที่ NPC BattleField\nเฉพาะช่วง 10 นาทีสุดท้ายก่อนเริ่มวอเท่านั้น\n\n📌 เช่น วอ '"$WAR_H"':00 จะสมัครได้ตั้งแต่ '"$WAR_H"':50"
+                 }' \
+                 ${{ secrets.DISCORD_WEBHOOK }}
+          fi
