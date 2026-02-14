@@ -2,7 +2,7 @@ name: Battlefield Auto Alert (TEST MODE)
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # ยิงทุก 5 นาที
+    - cron: '*/1 * * * *'   # ยิงทุก 5 นาที
   workflow_dispatch:
 
 jobs:
