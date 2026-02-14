@@ -1,27 +1,5 @@
-name: Battlefield Auto Alert (Test 1 Min)
-
-on:
-  schedule:
-    - cron: '* * * * *'   # รันทุก 1 นาที
-  workflow_dispatch:
-
-jobs:
-  notify:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Send Discord Alert
-        run: |
-          export TZ=Asia/Bangkok
-
-          CURRENT_TIME=$(date +"%H:%M:%S")
-          HOUR=$(date +"%H")
-          NEXT=$(( (10#$HOUR + 1) % 24 ))
-          printf -v NEXT "%02d:00" $NEXT
-
-          MESSAGE="🧪 TEST ALERT\n⏳ เวลา: $CURRENT_TIME\n⏭ รอบถัดไป: $NEXT"
-
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\":\"$MESSAGE\"}" \
-               ${{ secrets.DISCORD_WEBHOOK }}
+run: |
+  curl -H "Content-Type: application/json" \
+       -X POST \
+       -d '{"content":"🔥 TEST MESSAGE FROM GITHUB 🔥"}' \
+       ${{ secrets.DISCORD_WEBHOOK }}
